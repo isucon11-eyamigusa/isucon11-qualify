@@ -9,7 +9,7 @@ services:
       PMA_HOST: 127.0.0.1:13306
     network_mode: host
   
-phpmyadmin-2:
+  phpmyadmin-2:
     image: phpmyadmin:5.1
     restart: always
     ports:
