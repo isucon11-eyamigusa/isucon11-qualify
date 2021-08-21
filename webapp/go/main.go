@@ -72,6 +72,13 @@ type IsuFromJIA struct {
 	Character string `json:"character"`
 }
 
+type GetIsuListIsu struct {
+	ID         int    `db:"id"`
+	JIAIsuUUID string `db:"jia_isu_uuid"`
+	Name       string `db:"name"`
+	Character  string `db:"character"`
+}
+
 type GetIsuListResponse struct {
 	ID                 int                      `json:"id"`
 	JIAIsuUUID         string                   `json:"jia_isu_uuid"`
@@ -459,10 +466,10 @@ func getIsuList(c echo.Context) error {
 	}
 	defer tx.Rollback()
 
-	isuList := []Isu{}
+	isuList := []GetIsuListIsu{}
 	err = tx.Select(
 		&isuList,
-		"SELECT * FROM `isu` WHERE `jia_user_id` = ? ORDER BY `id` DESC",
+		"SELECT `id`,`jia_isu_uuid`,`name`,`character` FROM `isu` WHERE `jia_user_id` = ? ORDER BY `id` DESC",
 		jiaUserID)
 	if err != nil {
 		c.Logger().Errorf("db error: %v", err)
