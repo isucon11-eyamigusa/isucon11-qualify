@@ -50,6 +50,8 @@ var (
 	jiaJWTSigningKey *ecdsa.PublicKey
 
 	postIsuConditionTargetBaseURL string // JIAへのactivate時に登録する，ISUがconditionを送る先のURL
+
+	getIsuListSql string
 )
 
 type Config struct {
@@ -70,6 +72,21 @@ type Isu struct {
 
 type IsuFromJIA struct {
 	Character string `json:"character"`
+}
+
+type GetIsuListIsu struct {
+	// Isu
+	ID         int    `db:"id"`
+	JIAIsuUUID string `db:"jia_isu_uuid"`
+	Name       string `db:"name"`
+	Character  string `db:"character"`
+
+	// IsuCondition
+	Timestamp *time.Time `db:"timestamp"`
+	IsSitting *bool      `db:"is_sitting"`
+	Condition *string    `db:"condition"`
+	Message   *string    `db:"message"`
+	CreatedAt *time.Time `db:"created_at"`
 }
 
 type GetIsuListResponse struct {
@@ -207,6 +224,9 @@ func init() {
 }
 
 func main() {
+	getIsuListSqlBytes, _ := ioutil.ReadFile("GetIsuList.sql")
+	getIsuListSql = string(getIsuListSqlBytes)
+
 	e := echo.New()
 	e.Debug = true
 	e.Logger.SetLevel(log.DEBUG)
@@ -459,10 +479,10 @@ func getIsuList(c echo.Context) error {
 	}
 	defer tx.Rollback()
 
-	isuList := []Isu{}
+	isuList := []GetIsuListIsu{}
 	err = tx.Select(
 		&isuList,
-		"SELECT * FROM `isu` WHERE `jia_user_id` = ? ORDER BY `id` DESC",
+		getIsuListSql,
 		jiaUserID)
 	if err != nil {
 		c.Logger().Errorf("db error: %v", err)
@@ -471,35 +491,24 @@ func getIsuList(c echo.Context) error {
 
 	responseList := []GetIsuListResponse{}
 	for _, isu := range isuList {
-		var lastCondition IsuCondition
-		foundLastCondition := true
-		err = tx.Get(&lastCondition, "SELECT * FROM `isu_condition` WHERE `jia_isu_uuid` = ? ORDER BY `timestamp` DESC LIMIT 1",
-			isu.JIAIsuUUID)
-		if err != nil {
-			if errors.Is(err, sql.ErrNoRows) {
-				foundLastCondition = false
-			} else {
-				c.Logger().Errorf("db error: %v", err)
-				return c.NoContent(http.StatusInternalServerError)
-			}
-		}
+		foundLastCondition := isu.Condition != nil
 
 		var formattedCondition *GetIsuConditionResponse
 		if foundLastCondition {
-			conditionLevel, err := calculateConditionLevel(lastCondition.Condition)
+			conditionLevel, err := calculateConditionLevel(*isu.Condition)
 			if err != nil {
 				c.Logger().Error(err)
 				return c.NoContent(http.StatusInternalServerError)
 			}
 
 			formattedCondition = &GetIsuConditionResponse{
-				JIAIsuUUID:     lastCondition.JIAIsuUUID,
+				JIAIsuUUID:     isu.JIAIsuUUID,
 				IsuName:        isu.Name,
-				Timestamp:      lastCondition.Timestamp.Unix(),
-				IsSitting:      lastCondition.IsSitting,
-				Condition:      lastCondition.Condition,
+				Timestamp:      (*isu.Timestamp).Unix(),
+				IsSitting:      *isu.IsSitting,
+				Condition:      *isu.Condition,
 				ConditionLevel: conditionLevel,
-				Message:        lastCondition.Message,
+				Message:        *isu.Message,
 			}
 		}
 
