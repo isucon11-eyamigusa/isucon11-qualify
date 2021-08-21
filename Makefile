@@ -17,5 +17,8 @@ nginx:
 	sudo rm -f /etc/nginx/nginx.conf /etc/nginx/sites-available/isucondition.conf
 	sudo ln -s /home/isucon/git/nginx/nginx.conf /etc/nginx/nginx.conf
 	sudo ln -s /home/isucon/git/nginx/isucondition.conf /etc/nginx/sites-available/isucondition.conf
-	
+
+.PHONY: go
+go:
+	ln -s /home/isucon/git/go /home/isucon/webapp/go
 
