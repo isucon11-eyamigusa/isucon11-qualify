@@ -1,3 +1,8 @@
+.PHONY: bashrc
+bashrc:
+	rm -f /home/isucon/.bashrc
+	ln -s /home/isucon/git/bashrc /home/isucon/.bashrc
+
 .PHONY: restart-nginx
 restart-nginx:
 	sudo systemctl restart nginx
