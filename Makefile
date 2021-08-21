@@ -20,5 +20,6 @@ nginx:
 
 .PHONY: webapp
 webapp:
+	rm -rf /home/isucon/webapp
 	ln -s /home/isucon/git/webapp /home/isucon/webapp
 
