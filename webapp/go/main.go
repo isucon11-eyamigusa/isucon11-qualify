@@ -483,6 +483,7 @@ func getIsuList(c echo.Context) error {
 	err = tx.Select(
 		&isuList,
 		getIsuListSql,
+		jiaUserID,
 		jiaUserID)
 	if err != nil {
 		c.Logger().Errorf("db error: %v", err)
