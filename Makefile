@@ -8,6 +8,11 @@ restart-nginx:
 	sudo systemctl restart nginx
 	sudo systemctl status nginx
 
+.PHONY: restart-go
+restart-go:
+	sudo systemctl restart isucondition.go
+	sudo systemctl status isucondition.go
+
 .PHONY: sshconfig
 sshconfig:
 	ln -s ~/git/ssh_config ~/.ssh/config
