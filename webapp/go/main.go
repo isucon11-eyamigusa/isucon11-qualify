@@ -1093,13 +1093,6 @@ func getTrend(c echo.Context) error {
 
 	res := []TrendResponse{}
 
-	isuConditionList := []IsuTrendCondition{}
-	err = db.Select(&isuConditionList, "SELECT isu.id, isu.character, isu_condition.timestamp FROM `isu_condition` LEFT JOIN `isu` ON isu_condition.jia_isu_uuid = isu.jia_isu_uuid")
-	if err != nil {
-		c.Logger().Errorf("db error: %v", err)
-		return c.NoContent(http.StatusInternalServerError)
-	}
-
 	for _, character := range characterList {
 		isuList := []Isu{}
 		err = db.Select(&isuList,
